@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Path("/messages")
 @Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(value = {MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
 public class MessageRecource {
 
     private MessageService messageService = new MessageService();
@@ -35,9 +35,14 @@ public class MessageRecource {
 
     @GET
     @Path("/{messageId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Message getMessage(@PathParam("messageId") long id) {
-        return messageService.getMessage(id);
+    public Message getMessage(@PathParam("messageId") long id, @Context UriInfo uriInfo) {
+        Message message = messageService.getMessage(id);
+
+        message.addLinks(getAbsolutePath(uriInfo), "self");
+        message.addLinks(getProfileUri(uriInfo, message), "profile");
+        message.addLinks(getCommntUri(uriInfo, message), "comments");
+
+        return message;
     }
 
     @POST
@@ -67,6 +72,30 @@ public class MessageRecource {
     @Path("/{messageId}/comments")
     public CommentResource getCommentResource() {
         return new CommentResource();
+    }
+
+    private String getAbsolutePath(UriInfo uriInfo) {
+        return uriInfo.getAbsolutePath().toString();
+    }
+
+    private String getProfileUri(UriInfo uriInfo, Message message) {
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(ProfileResource.class)
+                .path(message.getAuthor())
+                .build()
+                .toString();
+        return uri;
+    }
+
+    private String getCommntUri(UriInfo uriInfo, Message message) {
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(MessageRecource.class)
+                .path(MessageRecource.class, "getCommentResource")
+                .path(CommentResource.class)
+                .resolveTemplate("messageId", message.getId())
+                .build()
+                .toString();
+        return uri;
     }
 }
 
