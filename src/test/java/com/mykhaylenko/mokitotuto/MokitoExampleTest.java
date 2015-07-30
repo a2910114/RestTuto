@@ -59,4 +59,13 @@ public class MokitoExampleTest {
 
         assertEquals(PRINT_ANY_STRING_EXPECTED, result);
     }
+
+    @Test
+    public void testSum() {
+        when(instance.sum(3,3)).thenReturn(6);
+
+        int result = instance.sum(3, 3);
+
+        assertEquals(6, result);
+    }
 }

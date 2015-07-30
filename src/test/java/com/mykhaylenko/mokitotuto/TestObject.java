@@ -10,4 +10,6 @@ public abstract class TestObject {
     abstract public String print(String string);
 
     abstract public ReturnObject create(int id, String name);
+
+    abstract public int sum(int a, int b);
 }
